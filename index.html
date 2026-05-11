@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bewerbungssystem: Prototyp</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --surface: #ffffff;
+      --surface-alt: #f8fbff;
+      --text: #1f2937;
+      --muted: #5f6b7a;
+      --line: #d8e0ea;
+      --primary: #1d4ed8;
+      --primary-strong: #1e40af;
+      --success: #166534;
+      --success-bg: #ecfdf5;
+      --error: #b91c1c;
+      --error-bg: #fef2f2;
+      --warning-bg: #fffbeb;
+      --focus: rgba(29, 78, 216, 0.15);
+      --radius: 18px;
+      --shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, Arial, Helvetica, sans-serif;
+      color: var(--text);
+      background: linear-gradient(180deg, #eef4ff 0%, var(--bg) 100%);
+      line-height: 1.5;
+    }
+
+    .page {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 28px 16px 56px;
+    }
+
+    .header {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 28px 28px;
+      margin-bottom: 18px;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: clamp(1.7rem, 3vw, 2.5rem);
+    }
+
+    .layout {
+      display: block;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 22px;
+    }
+
+    .card h2,
+    .card h3 {
+      margin: 0 0 10px;
+    }
+
+    .card p {
+      margin-top: 0;
+      color: var(--muted);
+    }
+
+    .stepper {
+      display: grid;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .step {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--surface-alt);
+    }
+
+    .step.current {
+      border-color: #93c5fd;
+      background: #eff6ff;
+    }
+
+    .step.done {
+      background: var(--success-bg);
+    }
+
+    .step-num {
+      width: 30px;
+      height: 30px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      font-weight: 700;
+      background: #dbeafe;
+      color: var(--primary-strong);
+    }
+
+    .step.done .step-num {
+      background: #bbf7d0;
+      color: var(--success);
+    }
+
+    .step.current .step-num {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .step-title {
+      font-weight: 700;
+      margin: 0 0 2px;
+    }
+
+    .step-text {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.94rem;
+    }
+
+    .notice {
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1px solid #c7d2fe;
+      background: #eef2ff;
+      color: #3730a3;
+      font-size: 0.95rem;
+      margin-bottom: 18px;
+    }
+
+    .success-box {
+      padding: 18px 20px;
+      border-radius: 16px;
+      border: 1px solid #86efac;
+      background: var(--success-bg);
+      color: var(--success);
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 18px;
+      box-shadow: 0 10px 24px rgba(22, 101, 52, 0.10);
+    }
+
+    .error-box {
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1px solid #fecaca;
+      background: var(--error-bg);
+      color: var(--error);
+      font-size: 0.95rem;
+      margin-top: 8px;
+    }
+
+    form {
+      display: grid;
+      gap: 18px;
+    }
+
+    fieldset {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 22px;
+      margin: 0;
+      background: var(--surface);
+    }
+
+    legend {
+      padding: 0 10px;
+      font-weight: 700;
+      font-size: 1.02rem;
+    }
+
+    .section-note {
+      margin: 0 0 18px;
+      color: var(--muted);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 16px;
+    }
+
+    .field {
+      grid-column: span 12;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    @media (min-width: 720px) {
+      .col-6 {
+        grid-column: span 6;
+      }
+
+      .col-4 {
+        grid-column: span 4;
+      }
+
+      .col-8 {
+        grid-column: span 8;
+      }
+
+      .col-12 {
+        grid-column: span 12;
+      }
+    }
+
+    label {
+      font-weight: 600;
+    }
+
+    .required::after {
+      content: " *";
+      color: var(--error);
+    }
+
+    .hint {
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px 14px;
+      font: inherit;
+      color: var(--text);
+      background: #fff;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    textarea {
+      min-height: 140px;
+      resize: vertical;
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: #94a3b8;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px var(--focus);
+    }
+
+    input:invalid:not(:placeholder-shown),
+    select:invalid,
+    textarea:invalid:not(:placeholder-shown) {
+      border-color: var(--error);
+    }
+
+    .inline-help {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+
+    .upload-box {
+      padding: 14px;
+      border: 1px dashed #b8c6d6;
+      border-radius: 14px;
+      background: var(--surface-alt);
+    }
+
+    .upload-status {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: #eff6ff;
+      color: var(--primary-strong);
+      font-size: 0.9rem;
+    }
+
+    .checkbox {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 0;
+    }
+
+    .checkbox input {
+      width: 18px;
+      height: 18px;
+      margin-top: 3px;
+      flex: 0 0 auto;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+
+    .actions-right {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-left: auto;
+    }
+
+    .btn {
+      appearance: none;
+      border: 0;
+      border-radius: 999px;
+      padding: 12px 18px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn-secondary {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-strong);
+    }
+
+    .btn-link {
+      background: transparent;
+      color: var(--primary-strong);
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    .summary-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      gap: 12px;
+    }
+
+    .summary-item {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px 16px;
+      background: var(--surface-alt);
+    }
+
+    .summary-item strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page">
+    <header class="header">
+      <h1>Bewerbung einreichen</h1>
+    </header>
+
+    <div class="layout">
+      <section class="card" aria-labelledby="form-heading">
+        <h2 id="form-heading">Bewerbungsformular</h2>
+        <p>
+          Pflichtfelder sind mit einem Stern markiert.
+        </p>
+        <form action="#" method="post" enctype="multipart/form-data">
+          <fieldset>
+            <legend>Schritt 1 von 3: Persönliche Angaben</legend>
+
+            <div class="grid">
+              <div class="field col-6">
+                <label class="required" for="vorname">Vorname</label>
+                <input id="vorname" name="vorname" type="text" autocomplete="given-name" placeholder="Max" required />
+              </div>
+
+              <div class="field col-6">
+                <label class="required" for="nachname">Nachname</label>
+                <input id="nachname" name="nachname" type="text" autocomplete="family-name" placeholder="Mustermann"
+                  required />
+              </div>
+
+              <div class="field col-6">
+                <label class="required" for="geburtsdatum">Geburtsdatum</label>
+                <input id="geburtsdatum" name="geburtsdatum" type="date" required />
+                <div class="hint">Beispiel: 31.12.1998</div>
+              </div>
+
+              <div class="field col-6">
+                <label for="anrede">Anrede</label>
+                <select id="anrede" name="anrede">
+                  <option value="">Bitte auswählen</option>
+                  <option value="frau">Frau</option>
+                  <option value="herr">Herr</option>
+                  <option value="divers">Divers</option>
+                  <option value="keine-angabe">Keine Angabe</option>
+                </select>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Schritt 2 von 3: Kontakt</legend>
+
+            <div class="grid">
+              <div class="field col-8">
+                <label class="required" for="email">E-Mail-Adresse</label>
+                <input id="email" name="email" type="email" autocomplete="email" placeholder="name@beispiel.de"
+                  required />
+                <div class="hint">Beispiel: name@beispiel.de</div>
+              </div>
+
+              <div class="field col-4">
+                <label for="telefon">Telefonnummer</label>
+                <input id="telefon" name="telefon" type="tel" autocomplete="tel" placeholder="+49 170 1234567" />
+              </div>
+
+              <div class="field col-8">
+                <label class="required" for="strasse">Straße und Hausnummer</label>
+                <input id="strasse" name="strasse" type="text" autocomplete="street-address"
+                  placeholder="Musterstraße 12" required />
+              </div>
+
+              <div class="field col-4">
+                <label class="required" for="plz">Postleitzahl</label>
+                <input id="plz" name="plz" type="text" inputmode="numeric" pattern="[0-9]{5}" placeholder="12345"
+                  required />
+                <div class="hint">5 Ziffern</div>
+              </div>
+
+              <div class="field col-6">
+                <label class="required" for="ort">Ort</label>
+                <input id="ort" name="ort" type="text" autocomplete="address-level2" placeholder="Berlin" required />
+              </div>
+
+              <div class="field col-6">
+                <label class="required" for="land">Land</label>
+                <input id="land" name="land" type="text" autocomplete="country-name" placeholder="Deutschland"
+                  required />
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Schritt 3 von 3: Bewerbung und Unterlagen</legend>
+            <p class="section-note">Wähle die Stelle aus und beschreibe deine Motivation in klaren Sätzen.</p>
+
+            <div class="grid">
+              <div class="field col-6">
+                <label class="required" for="position">Gewünschte Position</label>
+                <select id="position" name="position" required>
+                  <option value="">Bitte auswählen</option>
+                  <option value="frontend">Frontend Developer</option>
+                  <option value="backend">Backend Developer</option>
+                  <option value="fullstack">Full-Stack Developer</option>
+                  <option value="projekt">Projektmanagement</option>
+                  <option value="design">UI / UX Design</option>
+                </select>
+              </div>
+
+              <div class="field col-6">
+                <label for="startdatum">Gewünschter Starttermin</label>
+                <input id="startdatum" name="startdatum" type="date" />
+                <div class="hint">Beispiel: 01.09.2026</div>
+              </div>
+
+              <div class="field col-12">
+                <label class="required" for="motivationsschreiben">Motivationsschreiben</label>
+                <div class="upload-box">
+                  <input id="motivationsschreiben" name="motivationsschreiben" type="file" accept="application/pdf"
+                    required />
+                  <div class="hint">Erlaubt: PDF, maximal 10 MB</div>
+                  <div class="upload-status" aria-live="polite">Upload-Status: keine Datei ausgewählt</div>
+                </div>
+              </div>
+
+              <div class="field col-12">
+                <label class="required" for="lebenslauf">Lebenslauf</label>
+                <div class="upload-box">
+                  <input id="lebenslauf" name="lebenslauf" type="file" accept="application/pdf" required />
+                  <div class="hint">Erlaubt: PDF, maximal 10 MB</div>
+                  <div class="upload-status" aria-live="polite">Upload-Status: keine Datei ausgewählt</div>
+                </div>
+              </div>
+
+              <div class="field col-12">
+                <label for="zeugnisse">Weitere Unterlagen</label>
+                <div class="upload-box">
+                  <input id="zeugnisse" name="zeugnisse" type="file" accept="application/pdf,image/*" multiple />
+                  <div class="hint">Erlaubt: PDF, JPG, PNG. Mehrere Dateien sind möglich.</div>
+                  <div class="upload-status" aria-live="polite">Upload-Status: keine Datei ausgewählt</div>
+                </div>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Einwilligungen</legend>
+
+            <div class="grid">
+              <div class="field col-12">
+                <label class="checkbox" for="datenschutz">
+                  <input id="datenschutz" name="datenschutz" type="checkbox" required />
+                  <span>Ich habe die Datenschutzhinweise gelesen und stimme der Verarbeitung meiner Daten für das
+                    Bewerbungsverfahren zu.</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="error-box" role="alert">
+              Beispiel für Fehlermeldung: Bitte gib eine gültige E-Mail-Adresse ein.
+            </div>
+          </fieldset>
+          <div class="actions" aria-label="Navigation im Bewerbungsprozess">
+            <button class="btn btn-link" type="button">Abbrechen</button>
+            <div class="actions-right">
+              <button class="btn btn-primary" type="submit">Bewerbung absenden</button>
+            </div>
+          </div>
+
+          <div class="success-box" role="status" hidden>
+            Ihre Bewerbung wurde erfolgreich abgesendet. Wir haben Ihre Angaben übernommen.
+          </div>
+
+          <div class="success-box" role="status" hidden>
+            Ihre Bewerbung wurde erfolgreich abgesendet. Wir haben Ihre Angaben übernommen.
+          </div>
+        </form>
+      </section>
+    </div>
+  </main>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.querySelector('form');
+      if (!form) return;
+
+      const header = document.querySelector('.header');
+      const successBox = document.querySelector('.success-box');
+      const errorBox = document.querySelector('.error-box');
+      const fieldsets = Array.from(form.querySelectorAll('fieldset'));
+      const stepFieldsets = fieldsets.slice(0, 3);
+      const allFields = Array.from(form.querySelectorAll('input, select, textarea'));
+      const fileFields = allFields.filter((field) => field.type === 'file');
+      const buttons = Array.from(form.querySelectorAll('button'));
+      const backButton = buttons.find((btn) => btn.textContent.trim() === 'Zurück');
+      const saveButton = buttons.find((btn) => btn.textContent.trim() === 'Zwischenspeichern');
+      const cancelButton = buttons.find((btn) => btn.textContent.trim() === 'Abbrechen');
+      const storageKey = 'bewerbungssystem-draft-v1';
+
+      let saveTimer = null;
+      let activeStepIndex = 0;
+
+      const style = document.createElement('style');
+      style.textContent = `
+      .js-field-error {
+        margin-top: 4px;
+        font-size: 0.88rem;
+        color: var(--error);
+      }
+
+      .is-invalid {
+        border-color: var(--error) !important;
+      }
+
+      .app-stepper-note {
+        margin-top: 10px;
+        font-size: 0.92rem;
+        color: var(--muted);
+      }
+    `;
+      document.head.appendChild(style);
+
+      if (successBox) {
+        successBox.hidden = true;
+        successBox.setAttribute('tabindex', '-1');
+      }
+      if (errorBox) errorBox.hidden = true;
+
+      if (header) {
+      }
+
+      function showBox(box, text) {
+        if (!box) return;
+        box.textContent = text;
+        box.hidden = false;
+      }
+
+      function hideBox(box) {
+        if (!box) return;
+        box.hidden = true;
+      }
+
+      function clearAllBoxes() {
+        hideBox(successBox);
+        hideBox(errorBox);
+      }
+
+      function formatFileSize(bytes) {
+        const mb = bytes / (1024 * 1024);
+        return `${mb.toFixed(mb < 1 ? 2 : 1)} MB`;
+      }
+
+      function isPdf(file) {
+        return file.type === 'application/pdf' || /\.pdf$/i.test(file.name);
+      }
+
+      function isImage(file) {
+        return file.type.startsWith('image/') || /\.(png|jpe?g)$/i.test(file.name);
+      }
+
+      function getUploadStatusBox(input) {
+        const uploadBox = input.closest('.upload-box');
+        return uploadBox ? uploadBox.querySelector('.upload-status') : null;
+      }
+
+      function updateUploadStatus(input, message = '') {
+        const statusBox = getUploadStatusBox(input);
+        if (!statusBox) return;
+
+        const files = Array.from(input.files || []);
+        if (message) {
+          statusBox.textContent = `Upload-Status: ${message}`;
+          return;
+        }
+
+        if (!files.length) {
+          statusBox.textContent = 'Upload-Status: keine Datei ausgewählt';
+          return;
+        }
+
+        if (files.length === 1) {
+          statusBox.textContent = `Upload-Status: ${files[0].name} (${formatFileSize(files[0].size)})`;
+          return;
+        }
+
+        const totalSize = files.reduce((sum, file) => sum + file.size, 0);
+        statusBox.textContent = `Upload-Status: ${files.length} Dateien ausgewählt (${formatFileSize(totalSize)})`;
+      }
+
+      function getFeedbackBox(field) {
+        const container = field.closest('.field') || field.parentElement;
+        if (!container) return null;
+
+        let feedback = container.querySelector('.js-field-error');
+        if (!feedback) {
+          feedback = document.createElement('div');
+          feedback.className = 'js-field-error';
+          feedback.setAttribute('aria-live', 'polite');
+          field.insertAdjacentElement('afterend', feedback);
+        }
+        return feedback;
+      }
+
+      function getCustomMessage(field) {
+        if (field.type === 'file') {
+          const files = Array.from(field.files || []);
+          const maxBytes = 10 * 1024 * 1024;
+
+          if (field.required && files.length === 0) {
+            return 'Bitte wähle eine Datei aus.';
+          }
+
+          for (const file of files) {
+            if (file.size > maxBytes) {
+              return `Die Datei ${file.name} ist größer als 10 MB.`;
+            }
+          }
+
+          if ((field.id === 'lebenslauf' || field.id === 'motivationsschreiben') && files.length > 0) {
+            if (!isPdf(files[0])) {
+              return 'Bitte lade eine PDF-Datei hoch.';
+            }
+          }
+
+          if (field.id === 'zeugnisse' && files.length > 0) {
+            const invalidFile = files.find((file) => !(isPdf(file) || isImage(file)));
+            if (invalidFile) {
+              return 'Erlaubt sind PDF-, JPG- oder PNG-Dateien.';
+            }
+          }
+
+          return '';
+        }
+
+        if (field.validity.valueMissing) {
+          if (field.id === 'datenschutz') {
+            return 'Bitte bestätige die Datenschutzhinweise.';
+          }
+          return 'Dieses Feld soll ausgefüllt werden.';
+        }
+
+        if (field.validity.typeMismatch && field.type === 'email') {
+          return 'Bitte gib eine gültige E-Mail-Adresse ein.';
+        }
+
+        if (field.validity.patternMismatch && field.id === 'plz') {
+          return 'Die Postleitzahl soll aus 5 Ziffern bestehen.';
+        }
+
+        if (field.validity.badInput) {
+          return 'Bitte prüfe deine Eingabe.';
+        }
+
+        return '';
+      }
+
+      function syncFieldState(field) {
+        const message = getCustomMessage(field);
+        field.setCustomValidity(message);
+
+        const feedbackBox = getFeedbackBox(field);
+        const hasError = Boolean(message);
+
+        field.classList.toggle('is-invalid', hasError);
+        field.toggleAttribute('aria-invalid', hasError);
+
+        if (feedbackBox) {
+          if (hasError) {
+            feedbackBox.textContent = message;
+          } else {
+            feedbackBox.remove();
+          }
+        }
+
+        if (field.type === 'file') {
+          updateUploadStatus(field, message);
+        }
+
+        return !hasError;
+      }
+
+      function syncAllFields() {
+        return allFields.every((field) => syncFieldState(field));
+      }
+
+      function collectDraft() {
+        const draft = {};
+        allFields.forEach((field) => {
+          if (field.type === 'file') return;
+          if (field.type === 'checkbox') {
+            draft[field.id] = field.checked;
+          } else {
+            draft[field.id] = field.value;
+          }
+        });
+        return draft;
+      }
+
+      function saveDraft(showFeedback = true) {
+        try {
+          localStorage.setItem(storageKey, JSON.stringify(collectDraft()));
+          if (showFeedback) {
+            showBox(successBox, 'Entwurf wurde automatisch gespeichert.');
+            hideBox(errorBox);
+          }
+        } catch (error) {
+          showBox(errorBox, 'Der Entwurf konnte nicht gespeichert werden.');
+          hideBox(successBox);
+        }
+      }
+
+      function restoreDraft() {
+        const rawDraft = localStorage.getItem(storageKey);
+        if (!rawDraft) {
+          return false;
+        }
+
+        try {
+          const draft = JSON.parse(rawDraft);
+          Object.entries(draft).forEach(([id, value]) => {
+            const field = document.getElementById(id);
+            if (!field || field.type === 'file') return;
+
+            if (field.type === 'checkbox') {
+              field.checked = Boolean(value);
+            } else {
+              field.value = value ?? '';
+            }
+          });
+
+          return true;
+        } catch (error) {
+          return false;
+        }
+      }
+
+      function setActiveStep(index) {
+        activeStepIndex = Math.max(0, Math.min(index, stepFieldsets.length - 1));
+        const steps = Array.from(document.querySelectorAll('.stepper .step'));
+
+        steps.forEach((step, stepIndex) => {
+          step.classList.toggle('current', stepIndex === activeStepIndex);
+          step.classList.toggle('done', stepIndex < activeStepIndex);
+        });
+      }
+
+      function scrollToFieldset(index) {
+        const target = fieldsets[index];
+        if (!target) return;
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setActiveStep(Math.min(index, stepFieldsets.length - 1));
+      }
+
+      allFields.forEach((field) => {
+        const eventName = field.type === 'file' || field.tagName === 'SELECT' ? 'change' : 'input';
+        field.addEventListener(eventName, () => {
+          syncFieldState(field);
+          clearAllBoxes();
+          if (saveTimer) window.clearTimeout(saveTimer);
+          saveTimer = window.setTimeout(() => saveDraft(false), 400);
+        });
+
+        field.addEventListener('blur', () => {
+          syncFieldState(field);
+        });
+      });
+
+      form.addEventListener('invalid', (event) => {
+        event.preventDefault();
+        syncFieldState(event.target);
+        clearAllBoxes();
+      }, true);
+
+      form.addEventListener('focusin', (event) => {
+        const section = event.target.closest('fieldset');
+        const index = stepFieldsets.indexOf(section);
+        if (index !== -1) {
+          setActiveStep(index);
+        }
+      });
+
+      const observer = new IntersectionObserver((entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+
+        if (!visible) return;
+        const index = stepFieldsets.indexOf(visible.target);
+        if (index !== -1) {
+          setActiveStep(index);
+        }
+      }, {
+        threshold: [0.35, 0.5, 0.65],
+        rootMargin: '0px 0px -30% 0px'
+      });
+
+      stepFieldsets.forEach((fieldset) => observer.observe(fieldset));
+
+      if (backButton) {
+        backButton.addEventListener('click', () => {
+          const targetIndex = Math.max(0, activeStepIndex - 1);
+          scrollToFieldset(targetIndex);
+        });
+      }
+
+      if (saveButton) {
+        saveButton.addEventListener('click', () => {
+          saveDraft(true);
+        });
+      }
+
+      if (cancelButton) {
+        cancelButton.addEventListener('click', () => {
+          const confirmed = window.confirm('Möchtest du alle Eingaben wirklich verwerfen?');
+          if (!confirmed) return;
+
+          form.reset();
+          fileFields.forEach((field) => updateUploadStatus(field));
+          allFields.forEach((field) => syncFieldState(field));
+          localStorage.removeItem(storageKey);
+          clearAllBoxes();
+          showBox(successBox, 'Das Formular wurde zurückgesetzt.');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          setActiveStep(0);
+        });
+      }
+
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        clearAllBoxes();
+
+        const validSync = syncAllFields();
+        const nativeValid = form.checkValidity();
+
+        if (!validSync || !nativeValid) {
+          const invalidFields = form.querySelectorAll(':invalid');
+
+          showBox(
+            errorBox,
+            `Bitte prüfe ${invalidFields.length} markierte Eingabe${invalidFields.length > 1 ? 'n' : ''}.`
+          );
+
+          const firstInvalid = invalidFields[0];
+          if (firstInvalid) {
+            firstInvalid.focus({ preventScroll: true });
+            firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+
+          return;
+        }
+
+        saveDraft(false);
+        hideBox(errorBox);
+
+        showBox(
+          successBox,
+          'Ihre Bewerbung wurde erfolgreich abgesendet. Sie können dieses Fenster nun schließen.'
+        );
+
+        successBox?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        successBox?.focus({ preventScroll: true });
+      });
+
+      const restored = restoreDraft();
+      fileFields.forEach((field) => updateUploadStatus(field));
+      allFields.forEach((field) => syncFieldState(field));
+      setActiveStep(0);
+    });
+  </script>
+</body>
+
+</html>
