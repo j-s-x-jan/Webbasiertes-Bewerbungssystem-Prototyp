@@ -384,6 +384,41 @@
       display: block;
       margin-bottom: 4px;
     }
+
+    .js-field-error {
+      margin-top: 4px;
+      font-size: 0.88rem;
+      color: var(--error);
+    }
+
+    .is-invalid {
+      border-color: var(--error) !important;
+    }
+
+    .app-stepper-note {
+      margin-top: 10px;
+      font-size: 0.92rem;
+      color: var(--muted);
+    }
+
+    .upload-entry {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .upload-entry .upload-box {
+      display: grid;
+      gap: 10px;
+    }
+
+    .upload-entry-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
   </style>
 </head>
 
@@ -399,9 +434,9 @@
         <p>
           Pflichtfelder sind mit einem Stern markiert.
         </p>
-        <form action="#" method="post" enctype="multipart/form-data">
+        <form action="#" method="post" enctype="multipart/form-data" novalidate>
           <fieldset>
-            <legend>Schritt 1 von 3: Persönliche Angaben</legend>
+            <legend>Schritt 1: Persönliche Angaben</legend>
 
             <div class="grid">
               <div class="field col-6">
@@ -435,7 +470,7 @@
           </fieldset>
 
           <fieldset>
-            <legend>Schritt 2 von 3: Kontakt</legend>
+            <legend>Schritt 2: Kontakt</legend>
 
             <div class="grid">
               <div class="field col-8">
@@ -477,7 +512,7 @@
           </fieldset>
 
           <fieldset>
-            <legend>Schritt 3 von 3: Bewerbung und Unterlagen</legend>
+            <legend>Schritt 3: Bewerbung und Unterlagen</legend>
             <p class="section-note">Wähle die Stelle aus und beschreibe deine Motivation in klaren Sätzen.</p>
 
             <div class="grid">
@@ -519,18 +554,17 @@
               </div>
 
               <div class="field col-12">
-                <label for="zeugnisse">Weitere Unterlagen</label>
-                <div class="upload-box">
-                  <input id="zeugnisse" name="zeugnisse" type="file" accept="application/pdf,image/*" multiple />
-                  <div class="hint">Erlaubt: PDF, JPG, PNG. Mehrere Dateien sind möglich.</div>
-                  <div class="upload-status" aria-live="polite">Upload-Status: keine Datei ausgewählt</div>
-                </div>
+                <label>Weitere Unterlagen</label>
+                <p class="section-note" style="margin-bottom: 12px;">Du kannst beliebig viele zusätzliche Dateien hinzufügen.</p>
+                <div id="extra-files-container"></div>
+                <button class="btn btn-secondary" type="button" id="add-file-btn" style="margin-top: 12px;">+ Weitere Datei hinzufügen</button>
+                <div class="hint" style="margin-top: 10px;">Erlaubt: PDF, JPG, PNG. Maximal 10 MB pro Datei.</div>
               </div>
             </div>
           </fieldset>
 
           <fieldset>
-            <legend>Einwilligungen</legend>
+            <legend>Einwilligung</legend>
 
             <div class="grid">
               <div class="field col-12">
@@ -542,7 +576,7 @@
               </div>
             </div>
 
-            <div class="error-box" role="alert">
+            <div class="error-box" role="alert" hidden>
               Beispiel für Fehlermeldung: Bitte gib eine gültige E-Mail-Adresse ein.
             </div>
           </fieldset>
@@ -551,10 +585,6 @@
             <div class="actions-right">
               <button class="btn btn-primary" type="submit">Bewerbung absenden</button>
             </div>
-          </div>
-
-          <div class="success-box" role="status" hidden>
-            Ihre Bewerbung wurde erfolgreich abgesendet. Wir haben Ihre Angaben übernommen.
           </div>
 
           <div class="success-box" role="status" hidden>
@@ -574,16 +604,17 @@
       const errorBox = document.querySelector('.error-box');
       const fieldsets = Array.from(form.querySelectorAll('fieldset'));
       const stepFieldsets = fieldsets.slice(0, 3);
-      const allFields = Array.from(form.querySelectorAll('input, select, textarea'));
-      const fileFields = allFields.filter((field) => field.type === 'file');
       const buttons = Array.from(form.querySelectorAll('button'));
       const backButton = buttons.find((btn) => btn.textContent.trim() === 'Zurück');
       const saveButton = buttons.find((btn) => btn.textContent.trim() === 'Zwischenspeichern');
       const cancelButton = buttons.find((btn) => btn.textContent.trim() === 'Abbrechen');
       const storageKey = 'bewerbungssystem-draft-v1';
+      const extraFilesContainer = document.getElementById('extra-files-container');
+      const addFileButton = document.getElementById('add-file-btn');
 
       let saveTimer = null;
       let activeStepIndex = 0;
+      let extraFileCounter = 0;
 
       const style = document.createElement('style');
       style.textContent = `
@@ -643,6 +674,10 @@
         return file.type.startsWith('image/') || /\.(png|jpe?g)$/i.test(file.name);
       }
 
+      function getAllFields() {
+        return Array.from(form.querySelectorAll('input, select, textarea'));
+      }
+
       function getUploadStatusBox(input) {
         const uploadBox = input.closest('.upload-box');
         return uploadBox ? uploadBox.querySelector('.upload-status') : null;
@@ -686,6 +721,10 @@
         return feedback;
       }
 
+      function isExtraFileInput(field) {
+        return field.dataset.extraFile === 'true';
+      }
+
       function getCustomMessage(field) {
         if (field.type === 'file') {
           const files = Array.from(field.files || []);
@@ -707,7 +746,7 @@
             }
           }
 
-          if (field.id === 'zeugnisse' && files.length > 0) {
+          if (isExtraFileInput(field) && files.length > 0) {
             const invalidFile = files.find((file) => !(isPdf(file) || isImage(file)));
             if (invalidFile) {
               return 'Erlaubt sind PDF-, JPG- oder PNG-Dateien.';
@@ -721,7 +760,7 @@
           if (field.id === 'datenschutz') {
             return 'Bitte bestätige die Datenschutzhinweise.';
           }
-          return 'Dieses Feld soll ausgefüllt werden.';
+          return 'Dieses Feld muss ausgefüllt werden.';
         }
 
         if (field.validity.typeMismatch && field.type === 'email') {
@@ -729,7 +768,7 @@
         }
 
         if (field.validity.patternMismatch && field.id === 'plz') {
-          return 'Die Postleitzahl soll aus 5 Ziffern bestehen.';
+          return 'Die Postleitzahl muss aus 5 Ziffern bestehen.';
         }
 
         if (field.validity.badInput) {
@@ -765,12 +804,12 @@
       }
 
       function syncAllFields() {
-        return allFields.every((field) => syncFieldState(field));
+        return getAllFields().every((field) => syncFieldState(field));
       }
 
       function collectDraft() {
         const draft = {};
-        allFields.forEach((field) => {
+        getAllFields().forEach((field) => {
           if (field.type === 'file') return;
           if (field.type === 'checkbox') {
             draft[field.id] = field.checked;
@@ -836,7 +875,53 @@
         setActiveStep(Math.min(index, stepFieldsets.length - 1));
       }
 
-      allFields.forEach((field) => {
+      function createExtraFileEntry() {
+        if (!extraFilesContainer) return null;
+
+        extraFileCounter += 1;
+        const wrapper = document.createElement('div');
+        wrapper.className = 'upload-entry';
+        wrapper.dataset.entryId = String(extraFileCounter);
+
+        wrapper.innerHTML = `
+          <div class="upload-box">
+            <div class="upload-entry-header">
+              <strong>Zusatzdatei</strong>
+              <button type="button" class="btn btn-link remove-file-btn">Entfernen</button>
+            </div>
+            <input type="file" name="extraFiles[]" accept="application/pdf,image/*" data-extra-file="true" />
+            <div class="hint">Erlaubt: PDF, JPG, PNG. Maximal 10 MB.</div>
+            <div class="upload-status" aria-live="polite">Upload-Status: keine Datei ausgewählt</div>
+          </div>
+        `;
+
+        const input = wrapper.querySelector('input');
+        const removeButton = wrapper.querySelector('.remove-file-btn');
+
+        input.addEventListener('change', () => {
+          syncFieldState(input);
+          clearAllBoxes();
+          if (saveTimer) window.clearTimeout(saveTimer);
+          saveTimer = window.setTimeout(() => saveDraft(false), 400);
+        });
+
+        input.addEventListener('blur', () => {
+          syncFieldState(input);
+        });
+
+        removeButton.addEventListener('click', () => {
+          wrapper.remove();
+          clearAllBoxes();
+          if (saveTimer) window.clearTimeout(saveTimer);
+          saveTimer = window.setTimeout(() => saveDraft(false), 400);
+        });
+
+        extraFilesContainer.appendChild(wrapper);
+        syncFieldState(input);
+        return wrapper;
+      }
+
+      getAllFields().forEach((field) => {
         const eventName = field.type === 'file' || field.tagName === 'SELECT' ? 'change' : 'input';
         field.addEventListener(eventName, () => {
           syncFieldState(field);
@@ -900,13 +985,18 @@
           if (!confirmed) return;
 
           form.reset();
-          fileFields.forEach((field) => updateUploadStatus(field));
-          allFields.forEach((field) => syncFieldState(field));
+          getAllFields().forEach((field) => syncFieldState(field));
           localStorage.removeItem(storageKey);
           clearAllBoxes();
           showBox(successBox, 'Das Formular wurde zurückgesetzt.');
           window.scrollTo({ top: 0, behavior: 'smooth' });
           setActiveStep(0);
+        });
+      }
+
+      if (addFileButton) {
+        addFileButton.addEventListener('click', () => {
+          createExtraFileEntry();
         });
       }
 
@@ -922,7 +1012,7 @@
 
           showBox(
             errorBox,
-            `Bitte prüfe ${invalidFields.length} markierte Eingabe${invalidFields.length > 1 ? 'n' : ''}.`
+            `Die Bewerbung konnte nicht gesendet werden. ${invalidFields.length} Pflichtfeld${invalidFields.length > 1 ? 'er' : '' } ${invalidFields.length > 1 ? 'sind' : 'ist' } nicht ausgefüllt.`
           );
 
           const firstInvalid = invalidFields[0];
@@ -947,8 +1037,12 @@
       });
 
       const restored = restoreDraft();
-      fileFields.forEach((field) => updateUploadStatus(field));
-      allFields.forEach((field) => syncFieldState(field));
+      if (!restored) {
+        // keine gespeicherten Felder vorhanden
+      }
+
+      getAllFields().forEach((field) => syncFieldState(field));
+      createExtraFileEntry();
       setActiveStep(0);
     });
   </script>
