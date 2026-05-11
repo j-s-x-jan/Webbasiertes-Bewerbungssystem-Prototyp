@@ -47,20 +47,6 @@
       padding: 28px 16px 56px;
     }
 
-    .header {
-      background: var(--surface);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 28px 28px;
-      margin-bottom: 18px;
-    }
-
-    .header h1 {
-      margin: 0;
-      font-size: clamp(1.7rem, 3vw, 2.5rem);
-    }
-
     .layout {
       display: block;
     }
@@ -424,13 +410,10 @@
 
 <body>
   <main class="page">
-    <header class="header">
-      <h1>Bewerbung einreichen</h1>
-    </header>
 
     <div class="layout">
       <section class="card" aria-labelledby="form-heading">
-        <h2 id="form-heading">Bewerbungsformular</h2>
+        <h2 id="form-heading">Bewerbung einreichen</h2>
         <p>
           Pflichtfelder sind mit einem Stern markiert.
         </p>
@@ -513,7 +496,6 @@
 
           <fieldset>
             <legend>Schritt 3: Bewerbung und Unterlagen</legend>
-            <p class="section-note">Wähle die Stelle aus und beschreibe deine Motivation in klaren Sätzen.</p>
 
             <div class="grid">
               <div class="field col-6">
@@ -555,9 +537,9 @@
 
               <div class="field col-12">
                 <label>Weitere Unterlagen</label>
-                <p class="section-note" style="margin-bottom: 12px;">Du kannst beliebig viele zusätzliche Dateien hinzufügen.</p>
                 <div id="extra-files-container"></div>
-                <button class="btn btn-secondary" type="button" id="add-file-btn" style="margin-top: 12px;">+ Weitere Datei hinzufügen</button>
+                <button class="btn btn-secondary" type="button" id="add-file-btn" style="margin-top: 12px;">+ Weitere
+                  Datei hinzufügen</button>
                 <div class="hint" style="margin-top: 10px;">Erlaubt: PDF, JPG, PNG. Maximal 10 MB pro Datei.</div>
               </div>
             </div>
@@ -576,10 +558,8 @@
               </div>
             </div>
 
-            <div class="error-box" role="alert" hidden>
-              Beispiel für Fehlermeldung: Bitte gib eine gültige E-Mail-Adresse ein.
-            </div>
           </fieldset>
+          <div class="error-box" role="alert" hidden></div>
           <div class="actions" aria-label="Navigation im Bewerbungsprozess">
             <button class="btn btn-link" type="button">Abbrechen</button>
             <div class="actions-right">
@@ -615,6 +595,7 @@
       let saveTimer = null;
       let activeStepIndex = 0;
       let extraFileCounter = 0;
+      let formSubmitted = false;
 
       const style = document.createElement('style');
       style.textContent = `
@@ -789,10 +770,12 @@
         field.toggleAttribute('aria-invalid', hasError);
 
         if (feedbackBox) {
-          if (hasError) {
+          if (hasError && formSubmitted) {
             feedbackBox.textContent = message;
-          } else {
+          } else if (!hasError) {
             feedbackBox.remove();
+          } else {
+            feedbackBox.textContent = '';
           }
         }
 
@@ -988,7 +971,6 @@
           getAllFields().forEach((field) => syncFieldState(field));
           localStorage.removeItem(storageKey);
           clearAllBoxes();
-          showBox(successBox, 'Das Formular wurde zurückgesetzt.');
           window.scrollTo({ top: 0, behavior: 'smooth' });
           setActiveStep(0);
         });
@@ -1002,6 +984,7 @@
 
       form.addEventListener('submit', (event) => {
         event.preventDefault();
+        formSubmitted = true;
         clearAllBoxes();
 
         const validSync = syncAllFields();
@@ -1012,7 +995,7 @@
 
           showBox(
             errorBox,
-            `Die Bewerbung konnte nicht gesendet werden. ${invalidFields.length} Pflichtfeld${invalidFields.length > 1 ? 'er' : '' } ${invalidFields.length > 1 ? 'sind' : 'ist' } nicht ausgefüllt.`
+            `Die Bewerbung konnte nicht gesendet werden. ${invalidFields.length} Pflichtfeld${invalidFields.length > 1 ? 'er' : ''} ${invalidFields.length > 1 ? 'sind' : 'ist'} nicht ausgefüllt.`
           );
 
           const firstInvalid = invalidFields[0];
