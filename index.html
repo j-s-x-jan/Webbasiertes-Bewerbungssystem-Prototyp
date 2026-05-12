@@ -260,12 +260,6 @@
       box-shadow: 0 0 0 4px var(--focus);
     }
 
-    input:invalid:not(:placeholder-shown),
-    select:invalid,
-    textarea:invalid:not(:placeholder-shown) {
-      border-color: var(--error);
-    }
-
     .inline-help {
       display: flex;
       justify-content: space-between;
@@ -561,7 +555,7 @@
           </fieldset>
           <div class="error-box" role="alert" hidden></div>
           <div class="actions" aria-label="Navigation im Bewerbungsprozess">
-            <button class="btn btn-link" type="button">Abbrechen</button>
+            <button class="btn btn-link" type="button">Entwurf verwerfen</button>
             <div class="actions-right">
               <button class="btn btn-primary" type="submit">Bewerbung absenden</button>
             </div>
@@ -587,7 +581,7 @@
       const buttons = Array.from(form.querySelectorAll('button'));
       const backButton = buttons.find((btn) => btn.textContent.trim() === 'Zurück');
       const saveButton = buttons.find((btn) => btn.textContent.trim() === 'Zwischenspeichern');
-      const cancelButton = buttons.find((btn) => btn.textContent.trim() === 'Abbrechen');
+      const cancelButton = buttons.find((btn) => btn.textContent.trim() === 'Entwurf verwerfen');
       const storageKey = 'bewerbungssystem-draft-v1';
       const extraFilesContainer = document.getElementById('extra-files-container');
       const addFileButton = document.getElementById('add-file-btn');
@@ -766,8 +760,8 @@
         const feedbackBox = getFeedbackBox(field);
         const hasError = Boolean(message);
 
-        field.classList.toggle('is-invalid', hasError);
-        field.toggleAttribute('aria-invalid', hasError);
+        field.classList.toggle('is-invalid', hasError && formSubmitted);
+        field.toggleAttribute('aria-invalid', hasError && formSubmitted);
 
         if (feedbackBox) {
           if (hasError && formSubmitted) {
@@ -964,11 +958,25 @@
 
       if (cancelButton) {
         cancelButton.addEventListener('click', () => {
-          const confirmed = window.confirm('Möchtest du alle Eingaben wirklich verwerfen?');
+          const confirmed = window.confirm('Möchten Sie wirklich alle Eingaben verwerfen?');
           if (!confirmed) return;
 
+          formSubmitted = false;
           form.reset();
-          getAllFields().forEach((field) => syncFieldState(field));
+
+          getAllFields().forEach((field) => {
+            field.setCustomValidity('');
+            field.classList.remove('is-invalid');
+            field.removeAttribute('aria-invalid');
+
+            const feedbackBox = field.closest('.field')?.querySelector('.js-field-error');
+            if (feedbackBox) feedbackBox.remove();
+
+            if (field.type === 'file') {
+              updateUploadStatus(field);
+            }
+          });
+
           localStorage.removeItem(storageKey);
           clearAllBoxes();
           window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -984,6 +992,13 @@
 
       form.addEventListener('submit', (event) => {
         event.preventDefault();
+
+        const confirmed = window.confirm(
+          'Mit dieser Aktion wird die Bewerbung endgültig abgesendet. Möchten Sie fortfahren?'
+        );
+
+        if (!confirmed) return;
+
         formSubmitted = true;
         clearAllBoxes();
 
@@ -1001,7 +1016,10 @@
           const firstInvalid = invalidFields[0];
           if (firstInvalid) {
             firstInvalid.focus({ preventScroll: true });
-            firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            firstInvalid.scrollIntoView({
+              behavior: 'smooth',
+              block: 'center'
+            });
           }
 
           return;
@@ -1012,11 +1030,17 @@
 
         showBox(
           successBox,
-          'Ihre Bewerbung wurde erfolgreich abgesendet. Sie können dieses Fenster nun schließen.'
+          'Ihre Bewerbung wurde erfolgreich abgesendet. Wir haben Ihre Angaben erhalten.'
         );
 
-        successBox?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        successBox?.focus({ preventScroll: true });
+        successBox?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+
+        successBox?.focus({
+          preventScroll: true
+        });
       });
 
       const restored = restoreDraft();
