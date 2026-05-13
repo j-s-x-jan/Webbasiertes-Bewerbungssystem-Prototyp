@@ -462,8 +462,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  /* FORMULAR -> BESTÄTIGUNG */
-
   form.addEventListener('submit', (event) => {
 
     event.preventDefault();
@@ -510,8 +508,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  /* ZURÜCK ZUM FORMULAR */
-
   if (confirmBackBtn) {
 
     confirmBackBtn.addEventListener('click', () => {
@@ -525,8 +521,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
   }
-
-  /* ENDGÜLTIG ABSENDEN */
 
   if (confirmSubmitBtn) {
 
