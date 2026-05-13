@@ -208,6 +208,27 @@
       </section>
     </div>
 
+    <div id="discard-view" class="layout" hidden>
+      <section class="card" aria-labelledby="discard-heading">
+        <h2 id="discard-heading">Entwurf verwerfen?</h2>
+        <p>
+          Möchten Sie den Entwurf wirklich verwerfen? Diese Aktion kann nicht rückgängig gemacht werden.
+        </p>
+
+        <div class="actions">
+          <button class="btn btn-link" type="button" id="discard-back-btn">
+            Zurück zum Formular
+          </button>
+
+          <div class="actions-right">
+            <button class="btn btn-primary" type="button" id="discard-confirm-btn">
+              Entwurf verwerfen
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+
     <!-- BESTÄTIGUNG -->
     <div id="confirm-view" class="layout" hidden>
       <section class="card" aria-labelledby="confirm-heading">
@@ -217,7 +238,7 @@
         </h2>
 
         <p>
-          Mit diesem Schritt wird die Bewerbung endgültig abgesendet. Möchten Sie fortfahren?
+         Ihre Bewerbung wird nun endgültig abgesendet. Möchten Sie fortfahren?
         </p>
 
         <div class="actions">
@@ -253,4 +274,5 @@
 
   <script src="script.js"></script>
 </body>
+
 </html>
