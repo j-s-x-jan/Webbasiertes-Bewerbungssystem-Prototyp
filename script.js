@@ -172,7 +172,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (field.validity.valueMissing) {
 
       if (field.id === 'datenschutz') {
-        return 'Bitte bestätige die Datenschutzhinweise.';
+        return 'Bitte bestätigen Sie die Datenschutzhinweise.';
       }
 
       return 'Dieses Feld muss ausgefüllt werden.';
@@ -182,7 +182,7 @@ document.addEventListener('DOMContentLoaded', () => {
       field.validity.typeMismatch &&
       field.type === 'email'
     ) {
-      return 'Bitte gib eine gültige E-Mail-Adresse ein.';
+      return 'Bitte geben Sie eine gültige E-Mail-Adresse ein.';
     }
 
     if (
