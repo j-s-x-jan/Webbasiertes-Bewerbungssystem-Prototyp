@@ -301,7 +301,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function createExtraFileEntry() {
+  function createExtraFileEntry() { //für zusätzliche Upload-Felder
 
     extraFileCounter += 1;
 
@@ -309,7 +309,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     wrapper.className = 'upload-entry';
 
-    wrapper.innerHTML = `
+    wrapper.innerHTML = ` 
           <div class="upload-box">
 
             <div class="upload-entry-header">
