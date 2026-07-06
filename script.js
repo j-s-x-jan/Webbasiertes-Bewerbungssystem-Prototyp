@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     .from(form.querySelectorAll('button'))
     .find((btn) => btn.textContent.trim() === 'Entwurf verwerfen');
 
-  let formSubmitted = false;
+  let formSubmitted = false; //wurde bereits versucht, die Bewerbung abzuschicken
   let extraFileCounter = 0;
   let saveTimer = null;
 
